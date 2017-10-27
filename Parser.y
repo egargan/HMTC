@@ -62,6 +62,7 @@ import Scanner
     CONST       { (Const, $$) }
     DO          { (Do, $$) }
     ELSE        { (Else, $$) }
+    ELSIF       { (Elsif, $$) }    -- T3
     END         { (End, $$) }
     IF          { (If, $$) }
     IN          { (In, $$) }
@@ -110,8 +111,10 @@ command
         { CmdAssign {caVar = $1, caVal=$3, cmdSrcPos = srcPos $1} }
     | var_expression '(' expressions ')'
         { CmdCall {ccProc = $1, ccArgs = $3, cmdSrcPos = srcPos $1} }
+        
     | IF expression THEN command ELSE command
         { CmdIf {ciCond = $2, ciThen = $4, ciElse = $6, cmdSrcPos = $1} }
+        
     | WHILE expression DO command
         { CmdWhile {cwCond = $2, cwBody = $4, cmdSrcPos = $1} }
     | LET declarations IN command

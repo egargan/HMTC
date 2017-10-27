@@ -36,6 +36,7 @@ data Token
     | Const     -- ^ \"const\"
     | Do        -- ^ \"do\"
     | Else      -- ^ \"else\"
+    | Elsif     -- ^ \"elsif\"       -- T3 
     | End       -- ^ \"end\"
     | If        -- ^ \"if\"
     | In        -- ^ \"in\"
