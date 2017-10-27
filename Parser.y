@@ -112,8 +112,11 @@ command
     | var_expression '(' expressions ')'
         { CmdCall {ccProc = $1, ccArgs = $3, cmdSrcPos = srcPos $1} }
         
-    | IF expression THEN command ELSE command
-        { CmdIf {ciCond = $2, ciThen = $4, ciElse = $6, cmdSrcPos = $1} }
+                                                        -- T3
+    | IF expression THEN command elsif ELSE command
+        { CmdIf {ciCond = $2, ciThen = $4, ciElsif = $5, ciElse = Just $7, cmdSrcPos = $1} }  
+    | IF expression THEN command elsif
+        { CmdIf {ciCond = $2, ciThen = $4, ciElsif = $5, ciElse = Nothing, cmdSrcPos = $1} }
         
     | WHILE expression DO command
         { CmdWhile {cwCond = $2, cwBody = $4, cmdSrcPos = $1} }
@@ -125,6 +128,12 @@ command
           else
               CmdSeq {csCmds = $2, cmdSrcPos = srcPos $2}
         }
+        
+elsif :: { [(Expression, Command)] }
+elsif 
+    :  ELSIF expression THEN command elsif
+        { ( $2, $4 ) : $5 }
+    |  { [] }
 
 
 expressions :: { [Expression] }

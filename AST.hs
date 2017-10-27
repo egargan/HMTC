@@ -90,13 +90,16 @@ data Command
           csCmds    :: [Command],       -- ^ Commands
           cmdSrcPos :: SrcPos
       }
-    -- | Conditional command
+      
+    -- | Conditional command       -- T3 (mod)
     | CmdIf {
           ciCond    :: Expression,      -- ^ Condition
           ciThen    :: Command,         -- ^ Then-branch
-          ciElse    :: Command,         -- ^ Else-branch
+          ciElsif   :: [(Expression, Command)], -- ^ 0 or many Elsif
+          ciElse    :: Maybe Command,   -- ^ Else-branch   -- T3
           cmdSrcPos :: SrcPos
       }
+
     -- | While-loop
     | CmdWhile {
           cwCond    :: Expression,      -- ^ Loop-condition
