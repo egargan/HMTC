@@ -58,6 +58,7 @@ import Scanner
     ':'         { (Colon, $$) }
     ':='        { (ColEq, $$) }
     '='         { (Equals, $$) }
+    '?'         { (QMark, $$) } -- T2
     BEGIN       { (Begin, $$) }
     CONST       { (Const, $$) }
     DO          { (Do, $$) }
@@ -66,7 +67,9 @@ import Scanner
     IF          { (If, $$) }
     IN          { (In, $$) }
     LET         { (Let, $$) }
+    REPEAT      { (Repeat, $$)} -- T1
     THEN        { (Then, $$) }
+    UNTIL       { (Until, $$)} -- T1
     VAR         { (Var, $$) }
     WHILE       { (While, $$) }
     LITINT      { (LitInt {}, _) }
@@ -85,13 +88,16 @@ import Scanner
     '&&'        { (Op {opName="&&"},  _) }
     '||'        { (Op {opName="||"},  _) }
     '!'         { (Op {opName="!"},   _) }
+    '?:'        { (Op {opName="?:"},  _) }
 
+%right '?'  -- T2
 %left '||'
 %left '&&'
 %nonassoc '<' '<=' '==' '!=' '>=' '>'
 %left '+' '-'
 %left '*' '/'
 %right '^'
+
 
 %%
 
@@ -100,7 +106,7 @@ program : command       { AST $1 }
 
 
 commands :: { [Command] }
-commands : command              { [$1] } 
+commands : command              { [$1] }
          | command ';' commands { $1 : $3 }
 
 
@@ -122,11 +128,16 @@ command
           else
               CmdSeq {csCmds = $2, cmdSrcPos = srcPos $2}
         }
-
+<<<<<<< .merge_file_7qbcyt
+    | REPEAT command UNTIL expression
+        { CmdRepeat {crBody = $2, crCond = $4, cmdSrcPos = $1} } -- T1
+=======
+>>>>>>> .merge_file_rQtXly
 
 expressions :: { [Expression] }
 expressions : expression { [$1] }
             | expression ',' expressions { $1 : $3 }
+
 
 
 -- The terminal associated with a precedence declaration has to occur
@@ -170,6 +181,12 @@ expression
                   eaArgs    = [$1,$3],
                   expSrcPos = srcPos $1} }
 
+    | expression '?' expression ':' expression --				-- T2
+        { ExpCond {ecCond    = $1,
+                   ecExp1    = $3,
+				   ecExp2    = $5,
+                   expSrcPos = srcPos $1} }
+
 
 primary_expression :: { Expression }
     : LITINT
@@ -177,7 +194,7 @@ primary_expression :: { Expression }
     | var_expression
         { $1 }
     | opclass_unary primary_expression
-        { ExpApp {eaFun = $1, eaArgs = [$2], expSrcPos = srcPos $1}}
+        { ExpApp {eaFun = $1, eaArgs = [$2], expSrcPos = srcPos $1} }
     | '(' expression ')'
         { $2 }
 
@@ -194,7 +211,6 @@ primary_expression :: { Expression }
 
 var_expression :: { Expression }
     : ID { ExpVar {evVar = tspIdName $1, expSrcPos = tspSrcPos $1} }
-
 
 opclass_disjunctive :: { Expression }
     : '||' { mkExpVarBinOp $1 }
@@ -241,7 +257,7 @@ unary_op
 declarations :: { [Declaration] }
 declarations
     : declaration
-        { [$1] } 
+        { [$1] }
     | declaration ';' declarations
         { $1 : $3 }
 

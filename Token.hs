@@ -30,6 +30,7 @@ data Token
     | Colon     -- ^ \":\"
     | ColEq     -- ^ \":=\"
     | Equals    -- ^ \"=\"
+    | QMark     -- ^ |"?\"  -- T2
 
     -- Keywords
     | Begin     -- ^ \"begin\"
@@ -40,7 +41,9 @@ data Token
     | If        -- ^ \"if\"
     | In        -- ^ \"in\"
     | Let       -- ^ \"let\"
+    | Repeat    -- ^ \"repeat\"  -- T1
     | Then      -- ^ \"then\"
+    | Until     -- ^ \"until\"   -- T1
     | Var       -- ^ \"var\"
     | While     -- ^ \"while\"
 

@@ -39,7 +39,7 @@ import Diagnostics
 import ParseMonad
 
 
--- Operator characters. 
+-- Operator characters.
 -- The present scanner allows multi-character operators. This means that
 -- strings of operator characters will be scanned as a signle token as opposed
 -- to a sequence of tokens. Operators characters are all non-alphanumerical
@@ -79,7 +79,7 @@ nextTabStop :: Int -> Int
 nextTabStop n = n + (tabWidth - (n-1) `mod` tabWidth)
 
 
--- | MiniTriangle scanner. 
+-- | MiniTriangle scanner.
 
 scanner :: ((Token, SrcPos) -> P a) -> P a
 scanner cont = P $ scan
@@ -99,6 +99,9 @@ scanner cont = P $ scan
         scan l c (')' : s)  = retTkn RPar l c (c + 1) s
         scan l c (',' : s)  = retTkn Comma l c (c + 1) s
         scan l c (';' : s)  = retTkn Semicol l c (c + 1) s
+        
+        scan l c ('?' : s)  = retTkn QMark l c (c + 1) s  -- T2
+
         -- Scan numeric literals, operators, identifiers, and keywords
         scan l c (x : s) | isDigit x = scanLitInt l c x s
                          | isAlpha x = scanIdOrKwd l c x s
@@ -110,7 +113,6 @@ scanner cont = P $ scan
                                                      ++ show x
                                                      ++ " (discarded)")
                                            scan l (c + 1) s
-
 
         -- scanLitInt :: Int -> Int -> Char -> String -> D a
         scanLitInt l c x s = retTkn (LitInt (read (x : tail))) l c c' s'
@@ -138,18 +140,24 @@ scanner cont = P $ scan
                 c'         = c + 1 + length tail
 
         mkIdOrKwd :: String -> Token
-        mkIdOrKwd "begin" = Begin
-        mkIdOrKwd "const" = Const
-        mkIdOrKwd "do"    = Do
-        mkIdOrKwd "else"  = Else
-        mkIdOrKwd "end"   = End
-        mkIdOrKwd "if"    = If
-        mkIdOrKwd "in"    = In
-        mkIdOrKwd "let"   = Let
-        mkIdOrKwd "then"  = Then
-        mkIdOrKwd "var"   = Var
-        mkIdOrKwd "while" = While
-        mkIdOrKwd name    = Id {idName = name}
+        mkIdOrKwd "begin"       = Begin
+        mkIdOrKwd "const"       = Const
+        mkIdOrKwd "do"          = Do
+        mkIdOrKwd "else"        = Else
+        mkIdOrKwd "end"         = End
+        mkIdOrKwd "if"          = If
+        mkIdOrKwd "in"          = In
+        mkIdOrKwd "let"         = Let
+<<<<<<< .merge_file_4KlGV4
+        mkIdOrKwd "repeat"      = Repeat -- T1
+        mkIdOrKwd "then"        = Then
+        mkIdOrKwd "until"       = Until -- T1
+=======
+        mkIdOrKwd "then"        = Then
+>>>>>>> .merge_file_17RAmE
+        mkIdOrKwd "var"         = Var
+        mkIdOrKwd "while"       = While
+        mkIdOrKwd name          = Id {idName = name}
 
         -- Return token, position of token, updated position, and remaning
         -- input. We assume tnat no MiniTriangle token span multiple

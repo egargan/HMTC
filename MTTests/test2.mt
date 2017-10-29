@@ -12,5 +12,8 @@ in
 	        putint(n);
 	        d2 := d2 + d1;
                 n := n + d2
-            end
+            end;
+			
+	d2 := d1 ? d1 ? d1 : d1 : d1
+	
     end

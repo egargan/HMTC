@@ -109,7 +109,12 @@ data Command
           clBody    :: Command,         -- ^ Let-body
           cmdSrcPos :: SrcPos
       }
-
+    -- | Repeat-Until loop  -- T1
+    | CmdRepeat {
+          crBody    :: Command,         -- ^ Repeat body
+          crCond    :: Expression,      -- ^ 'until' condition
+          cmdSrcPos :: SrcPos
+      }
 
 instance HasSrcPos Command where
     srcPos = cmdSrcPos
@@ -133,6 +138,15 @@ data Expression
           eaArgs    :: [Expression],    -- ^ Arguments
           expSrcPos :: SrcPos
       }
+    -- | Conditional expression                    -- T2
+    | ExpCond {
+          ecCond    :: Expression,
+          ecExp1    :: Expression,
+          ecExp2    :: Expression,
+          expSrcPos :: SrcPos
+      }
+
+
 
 
 instance HasSrcPos Expression where
@@ -177,4 +191,3 @@ data TypeDenoter
 
 instance HasSrcPos TypeDenoter where
     srcPos = tdSrcPos
-

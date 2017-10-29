@@ -64,6 +64,10 @@ ppCommand n (CmdLet {clDecls = ds, clBody = c, cmdSrcPos = sp}) =
     indent n . showString "CmdLet" . spc . ppSrcPos sp . nl
     . ppSeq (n+1) ppDeclaration ds
     . ppCommand (n+1) c
+ppComand n (CmdRepeat {crBody = c, crCond = e, cmdSrcPos = sp}) =
+    indent n . showString "CmdRepeat" . spc . ppSrcPos sp . nl
+    . ppCommand (n+1) c
+    . ppExpression (n+1) e
 
 
 ------------------------------------------------------------------------------
@@ -71,7 +75,7 @@ ppCommand n (CmdLet {clDecls = ds, clBody = c, cmdSrcPos = sp}) =
 ------------------------------------------------------------------------------
 
 ppExpression :: Int -> Expression -> ShowS
-ppExpression n (ExpLitInt {eliVal = v}) = 
+ppExpression n (ExpLitInt {eliVal = v}) =
     indent n . showString "ExpLitInt". spc . shows v . nl
 ppExpression n (ExpVar {evVar = v}) =
     indent n . showString "ExpVar" . spc . ppName v . nl
@@ -79,6 +83,11 @@ ppExpression n (ExpApp {eaFun = f, eaArgs = es, expSrcPos = sp}) =
     indent n . showString "ExpApp" . spc . ppSrcPos sp . nl
     . ppExpression (n+1) f
     . ppSeq (n+1) ppExpression es
+ppExpression n (ExpCond {ecCond = c, ecExp1 = ea, ecExp2 = eb, expSrcPos = sp}) =
+    indent n . showString "ExpCond" . spc . ppSrcPos sp . nl
+    . ppExpression (n+1) c
+    . ppExpression (n+1) ea
+    . ppExpression (n+1) eb
 
 
 ------------------------------------------------------------------------------
@@ -87,13 +96,13 @@ ppExpression n (ExpApp {eaFun = f, eaArgs = es, expSrcPos = sp}) =
 
 ppDeclaration :: Int -> Declaration -> ShowS
 ppDeclaration n (DeclConst {dcConst = c, dcType = t, dcVal = e,
-                            declSrcPos = sp}) = 
+                            declSrcPos = sp}) =
     indent n . showString "DeclConst" . spc . ppSrcPos sp . nl
     . indent (n+1) . ppName c . nl
     . ppTypeDenoter (n+1) t
     . ppExpression (n+1) e
 ppDeclaration n (DeclVar {dvVar = v, dvType = t, dvMbVal = me,
-                          declSrcPos = sp}) = 
+                          declSrcPos = sp}) =
     indent n . showString "DeclVar" . spc . ppSrcPos sp . nl
     . indent (n+1) . ppName v . nl
     . ppTypeDenoter (n+1) t
@@ -105,5 +114,5 @@ ppDeclaration n (DeclVar {dvVar = v, dvType = t, dvMbVal = me,
 ------------------------------------------------------------------------------
 
 ppTypeDenoter :: Int -> TypeDenoter -> ShowS
-ppTypeDenoter n (TDBaseType {tdbtName = tn}) = 
+ppTypeDenoter n (TDBaseType {tdbtName = tn}) =
     indent n . showString "TDBaseType" . spc . ppName tn . nl
