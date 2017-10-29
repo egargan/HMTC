@@ -63,6 +63,7 @@ import Scanner
     CONST       { (Const, $$) }
     DO          { (Do, $$) }
     ELSE        { (Else, $$) }
+    ELSIF       { (Elsif, $$) }
     END         { (End, $$) }
     IF          { (If, $$) }
     IN          { (In, $$) }
@@ -116,8 +117,12 @@ command
         { CmdAssign {caVar = $1, caVal=$3, cmdSrcPos = srcPos $1} }
     | var_expression '(' expressions ')'
         { CmdCall {ccProc = $1, ccArgs = $3, cmdSrcPos = srcPos $1} }
-    | IF expression THEN command ELSE command
-        { CmdIf {ciCond = $2, ciThen = $4, ciElse = $6, cmdSrcPos = $1} }
+
+    | IF expression THEN command elsif ELSE command  -- T3
+        { CmdIf {ciCond = $2, ciThen = $4, ciElsif = $5, ciElse = Just $7, cmdSrcPos = $1} }
+    | IF expression THEN command elsif
+        { CmdIf {ciCond = $2, ciThen = $4, ciElsif = $5, ciElse = Nothing, cmdSrcPos = $1} }
+
     | WHILE expression DO command
         { CmdWhile {cwCond = $2, cwBody = $4, cmdSrcPos = $1} }
     | LET declarations IN command
@@ -128,17 +133,16 @@ command
           else
               CmdSeq {csCmds = $2, cmdSrcPos = srcPos $2}
         }
-<<<<<<< .merge_file_7qbcyt
     | REPEAT command UNTIL expression
         { CmdRepeat {crBody = $2, crCond = $4, cmdSrcPos = $1} } -- T1
-=======
->>>>>>> .merge_file_rQtXly
 
 expressions :: { [Expression] }
 expressions : expression { [$1] }
             | expression ',' expressions { $1 : $3 }
 
-
+elsif :: { [(Expression, Command)] }
+elsif :  ELSIF expression THEN command elsif { ( $2, $4 ) : $5 } -- T3
+      |  { [] }
 
 -- The terminal associated with a precedence declaration has to occur
 -- *literally* in a rule if precedence declarations are to be taken into

@@ -51,11 +51,15 @@ ppCommand n (CmdCall {ccProc = p, ccArgs = es, cmdSrcPos = sp}) =
 ppCommand n (CmdSeq {csCmds = cs, cmdSrcPos = sp}) =
     indent n . showString "CmdSeq" . spc . ppSrcPos sp . nl
     . ppSeq (n+1) ppCommand cs
-ppCommand n (CmdIf {ciCond = e, ciThen = c1, ciElse = c2, cmdSrcPos = sp}) =
-    indent n . showString "CmdIf" . spc . ppSrcPos sp . nl
+
+ppCommand n (CmdIf {ciCond = e, ciThen = c1, ciElsif = c2, ciElse = c3, cmdSrcPos = sp}) =
+    indent n . showString "CmdIf" . spc . ppSrcPos sp . nl    -- T3
     . ppExpression (n+1) e
     . ppCommand (n+1) c1
-    . ppCommand (n+1) c2
+    . ppSeq (n+1) ppExpression (map fst c2)
+    . ppSeq (n+1) ppCommand (map snd c2)
+    . ppOpt (n+1) ppCommand c3
+
 ppCommand n (CmdWhile {cwCond = e, cwBody = c, cmdSrcPos = sp}) =
     indent n . showString "CmdWhile" . spc . ppSrcPos sp . nl
     . ppExpression (n+1) e

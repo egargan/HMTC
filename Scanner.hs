@@ -99,7 +99,7 @@ scanner cont = P $ scan
         scan l c (')' : s)  = retTkn RPar l c (c + 1) s
         scan l c (',' : s)  = retTkn Comma l c (c + 1) s
         scan l c (';' : s)  = retTkn Semicol l c (c + 1) s
-        
+
         scan l c ('?' : s)  = retTkn QMark l c (c + 1) s  -- T2
 
         -- Scan numeric literals, operators, identifiers, and keywords
@@ -144,17 +144,14 @@ scanner cont = P $ scan
         mkIdOrKwd "const"       = Const
         mkIdOrKwd "do"          = Do
         mkIdOrKwd "else"        = Else
+        mkIdOrKwd "elsif"       = Elsif  -- T3
         mkIdOrKwd "end"         = End
         mkIdOrKwd "if"          = If
         mkIdOrKwd "in"          = In
         mkIdOrKwd "let"         = Let
-<<<<<<< .merge_file_4KlGV4
         mkIdOrKwd "repeat"      = Repeat -- T1
         mkIdOrKwd "then"        = Then
         mkIdOrKwd "until"       = Until -- T1
-=======
-        mkIdOrKwd "then"        = Then
->>>>>>> .merge_file_17RAmE
         mkIdOrKwd "var"         = Var
         mkIdOrKwd "while"       = While
         mkIdOrKwd name          = Id {idName = name}
