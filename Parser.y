@@ -68,9 +68,9 @@ import Scanner
     IF          { (If, $$) }
     IN          { (In, $$) }
     LET         { (Let, $$) }
-    REPEAT      { (Repeat, $$)} -- T1
+    REPEAT      { (Repeat, $$) } -- T1
     THEN        { (Then, $$) }
-    UNTIL       { (Until, $$)} -- T1
+    UNTIL       { (Until, $$) } -- T1
     VAR         { (Var, $$) }
     WHILE       { (While, $$) }
     LITINT      { (LitInt {}, _) }
