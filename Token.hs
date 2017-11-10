@@ -6,7 +6,7 @@
 *       Purpose:        Representation of tokens (lexical symbols)           *
 *       Authors:        Henrik Nilsson                                       *
 *                                                                            *
-*                 Copyright (c) Henrik Nilsson, 2006 - 2012                  *
+*                 Copyright (c) Henrik Nilsson, 2006 - 2013                  *
 *                                                                            *
 ******************************************************************************
 -}
@@ -25,31 +25,40 @@ data Token
     -- Graphical tokens
     = LPar      -- ^ \"(\"
     | RPar      -- ^ \")\"
+    | LBrk      -- ^ \"[\"
+    | RBrk      -- ^ \"]\"
+    | LBrc      -- ^ \"{\"
+    | RBrc      -- ^ \"}\"
     | Comma     -- ^ \",\"
+    | Period    -- ^ \".\"
     | Semicol   -- ^ \";\"
     | Colon     -- ^ \":\"
     | ColEq     -- ^ \":=\"
     | Equals    -- ^ \"=\"
-    | QMark     -- ^ |"?\"  -- T2
+    | Cond      -- ^ \"?\"
 
     -- Keywords
     | Begin     -- ^ \"begin\"
     | Const     -- ^ \"const\"
     | Do        -- ^ \"do\"
     | Else      -- ^ \"else\"
-    | Elsif     -- ^ \"elsif\"  -- T3
+    | Elsif     -- ^ \"elsif\"
     | End       -- ^ \"end\"
+    | Fun       -- ^ \"fun\"
     | If        -- ^ \"if\"
     | In        -- ^ \"in\"
     | Let       -- ^ \"let\"
-    | Repeat    -- ^ \"repeat\"  -- T1
+    | Out       -- ^ \"out\"
+    | Proc      -- ^ \"proc\"
+    | Repeat    -- ^ \"repeat\"
     | Then      -- ^ \"then\"
-    | Until     -- ^ \"until\"   -- T1
+    | Until     -- ^ \"until\"
     | Var       -- ^ \"var\"
     | While     -- ^ \"while\"
 
     -- Tokens with variable spellings
     | LitInt {liVal :: Integer}         -- ^ Integer literals
+    | LitChr {lcVal :: Char}            -- ^ Character literals
     | Id     {idName :: Name}           -- ^ Identifiers
     | Op     {opName :: Name}           -- ^ Operators
 

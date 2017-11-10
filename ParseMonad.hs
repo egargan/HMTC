@@ -19,16 +19,18 @@
 -- the source code position is readily available to avoid having to pass
 -- the position as an explicit argument.
 
+-- Updated 2015 in view of revised monad class hierarchy.
+
 module ParseMonad (
     -- The parse monad
     P (..),             -- Not abstract. Instances: Monad.
-    unP,                -- :: P a -> (Int -> Int -> String -> D a)
+    unP,                -- :: P a -> (Int -> Int -> String -> DF a)
     emitInfoP,          -- :: String -> P ()
     emitWngP,           -- :: String -> P ()
     emitErrP,           -- :: String -> P ()
     failP,              -- :: String -> P a
     getSrcPosP,         -- :: P SrcPos
-    runP                -- :: String -> P a -> D a
+    runP                -- :: String -> P a -> DF a
 ) where
 
 -- Standard library imports
@@ -40,10 +42,10 @@ import SrcPos
 import Diagnostics
 
 
-newtype P a = P (Int -> Int -> String -> D a)
+newtype P a = P (Int -> Int -> String -> DF a)
 
 
-unP :: P a -> (Int -> Int -> String -> D a)
+unP :: P a -> (Int -> Int -> String -> DF a)
 unP (P x) = x
 
 
@@ -65,7 +67,7 @@ instance Monad P where
     p >>= f = P (\l c s -> unP p l c s >>= \a -> unP (f a) l c s)
 
 
--- Liftings of useful computations from the underlying D monad, taking
+-- Liftings of useful computations from the underlying DF monad, taking
 -- advantage of the fact that source code positions are available.
 
 -- | Emits an information message.
@@ -93,6 +95,6 @@ getSrcPosP :: P SrcPos
 getSrcPosP = P (\l c _ -> return (SrcPos l c))
 
 
--- | Runs parser (and scanner), yielding a result in the diagnostics monad D.
-runP :: P a -> String -> D a
+-- | Runs parser (and scanner), yielding a result in the diagnostics monad DF.
+runP :: P a -> String -> DF a
 runP p s = unP p 1 1 s

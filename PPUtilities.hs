@@ -20,7 +20,10 @@ module PPUtilities (
     ppSeq,      -- :: Int -> (Int -> a -> ShowS) -> [a] -> ShowS
     indent,     -- :: Int -> ShowS
     nl,         -- :: ShowS
-    spc         -- :: ShowS
+    spc,        -- :: ShowS
+    spcs,       -- :: Int -> ShowS
+    leftJust,   -- :: Int -> String -> ShowS
+    rightJust   -- :: Int -> String -> ShowS
 ) where
 
 -- HMTC module imports
@@ -67,7 +70,7 @@ ppSeq n pp (x:xs) = pp n x . ppSeq n pp xs
 
 -- | Indent to specified level by printing spaces.
 indent :: Int -> ShowS
-indent n = showString (take (2 * n) (repeat ' '))
+indent n = spcs (2 * n)
 
 
 -- | Start a new line.
@@ -78,3 +81,18 @@ nl  = showChar '\n'
 -- | Print a space.
 spc :: ShowS
 spc = showChar ' '
+
+
+-- | Print n spaces.
+spcs :: Int -> ShowS
+spcs n = showString (take n (repeat ' '))
+
+
+-- | Left justify in field of width n
+leftJust :: Int -> String -> ShowS
+leftJust n s = showString s . spcs (max 0 (n - length s))
+             
+
+-- | Right justify in field of width n
+rightJust :: Int -> String -> ShowS
+rightJust n s = spcs (max 0 (n - length s)) . showString s

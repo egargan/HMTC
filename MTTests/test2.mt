@@ -13,5 +13,4 @@ in
 	        d2 := d2 + d1;
                 n := n + d2
             end
-
     end

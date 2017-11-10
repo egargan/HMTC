@@ -14,22 +14,37 @@ all: hmtc
 
 
 #-----------------------------------------------------------------------------
-# Source files:
+# Source files: 
 #-----------------------------------------------------------------------------
 
 # Haskell sources.
 hs_sources = \
     AST.hs \
+    CodeGenerator.hs \
+    CodeGenMonad.hs \
     Diagnostics.hs \
+    Env.hs \
+    LibMT.hs \
     Main.hs \
+    MTIR.hs \
+    MTStdEnv.hs \
     Name.hs \
     ParseMonad.hs \
     Parser.hs \
     PPAST.hs \
+    PPMTIR.hs \
+    PPTAMCode.hs \
     PPUtilities.hs \
     Scanner.hs \
+    ScopeLevel.hs \
     SrcPos.hs \
-    Token.hs
+    Symbol.hs \
+    TAMCode.hs \
+    TAMCodeParser.hs \
+    TAMInterpreter.hs \
+    Token.hs \
+    TypeChecker.hs \
+    Type.hs
 
 
 #-----------------------------------------------------------------------------
@@ -38,7 +53,6 @@ hs_sources = \
 
 SHELL = /bin/sh
 
-# HS_USER_OPTS = -fno-warn-tabs
 HS_OPTS += -O $(HS_PACKAGES) $(HS_EXTRA_IMPORTS) $(HS_USER_OPTS)
 MAKE.hs  = ghc --make $(HS_OPTS) -o $@
 
@@ -92,4 +106,5 @@ clean:
 
 really-clean: clean
 	-$(RM) Parser.hs
+	-$(RM) TAMCodeParser.hs
 	-rm -rf Doc

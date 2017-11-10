@@ -25,7 +25,7 @@
 
 module Scanner (
     scanner,            -- ((Token, SrcPos) -> P a) -> P a
-    scan,               -- String -> D [(Token, SrcPos)]
+    scan,               -- String -> DF [(Token, SrcPos)]
     testScanner         -- String -> IO ()
 ) where
 
@@ -39,7 +39,7 @@ import Diagnostics
 import ParseMonad
 
 
--- Operator characters.
+-- Operator characters. 
 -- The present scanner allows multi-character operators. This means that
 -- strings of operator characters will be scanned as a signle token as opposed
 -- to a sequence of tokens. Operators characters are all non-alphanumerical
@@ -79,7 +79,7 @@ nextTabStop :: Int -> Int
 nextTabStop n = n + (tabWidth - (n-1) `mod` tabWidth)
 
 
--- | MiniTriangle scanner.
+-- | MiniTriangle scanner. 
 
 scanner :: ((Token, SrcPos) -> P a) -> P a
 scanner cont = P $ scan
@@ -97,11 +97,14 @@ scanner cont = P $ scan
         -- Scan graphical tokens
         scan l c ('(' : s)  = retTkn LPar l c (c + 1) s
         scan l c (')' : s)  = retTkn RPar l c (c + 1) s
+        scan l c ('[' : s)  = retTkn LBrk l c (c + 1) s
+        scan l c (']' : s)  = retTkn RBrk l c (c + 1) s
+        scan l c ('{' : s)  = retTkn LBrc l c (c + 1) s
+        scan l c ('}' : s)  = retTkn RBrc l c (c + 1) s
         scan l c (',' : s)  = retTkn Comma l c (c + 1) s
         scan l c (';' : s)  = retTkn Semicol l c (c + 1) s
-
-        scan l c ('?' : s)  = retTkn QMark l c (c + 1) s  -- T2
-
+        -- Scan character literals
+        scan l c ('\'' : s) = scanLitChr l c s
         -- Scan numeric literals, operators, identifiers, and keywords
         scan l c (x : s) | isDigit x = scanLitInt l c x s
                          | isAlpha x = scanIdOrKwd l c x s
@@ -113,6 +116,39 @@ scanner cont = P $ scan
                                                      ++ show x
                                                      ++ " (discarded)")
                                            scan l (c + 1) s
+
+        
+        -- Note: column c refers to position of already discarded start quote.
+        -- scanLitChr :: Int -> Int -> String -> D a
+        scanLitChr l c ('\\' : x : '\'' : s) =
+            case encodeEsc x of
+                Just e  -> retTkn (LitChr e) l c (c + 4) s
+                Nothing -> do
+                    emitErrD (SrcPos l c)
+                             ("Lexical error: Illegal escaped character "
+                              ++ show x ++ " in character literal (discarded)")
+                    scan l (c + 4) s
+        scanLitChr l c (x : '\'' : s)
+            | x >= ' ' && x <= '~' && x /= '\'' && x /= '\\' =
+                retTkn (LitChr x) l c (c + 3) s
+            | otherwise = do
+                emitErrD (SrcPos l c)
+                         ("Lexical error: Illegal character "
+                          ++ show x ++ " in character literal (discarded)")
+                scan l (c + 3) s
+        scanLitChr l c s = do
+            emitErrD (SrcPos l c)
+                     ("Lexical error: Malformed character literal \
+                      \(discarded)")
+            scan l (c + 1) s
+
+        encodeEsc 'n'  = Just '\n'
+        encodeEsc 'r'  = Just '\r'
+        encodeEsc 't'  = Just '\t'
+        encodeEsc '\\' = Just '\\'
+        encodeEsc '\'' = Just '\''
+        encodeEsc _    = Nothing
+
 
         -- scanLitInt :: Int -> Int -> Char -> String -> D a
         scanLitInt l c x s = retTkn (LitInt (read (x : tail))) l c c' s'
@@ -128,9 +164,11 @@ scanner cont = P $ scan
                 c'         = c + 1 + length tail
 
         mkOpOrSpecial :: String -> Token
+        mkOpOrSpecial "."  = Period
         mkOpOrSpecial ":"  = Colon
         mkOpOrSpecial ":=" = ColEq
         mkOpOrSpecial "="  = Equals
+        mkOpOrSpecial "?"  = Cond
         mkOpOrSpecial name = Op {opName = name}
 
         -- scanIdOrKwd :: Int -> Int -> Char -> String -> D a
@@ -140,21 +178,24 @@ scanner cont = P $ scan
                 c'         = c + 1 + length tail
 
         mkIdOrKwd :: String -> Token
-        mkIdOrKwd "begin"       = Begin
-        mkIdOrKwd "const"       = Const
-        mkIdOrKwd "do"          = Do
-        mkIdOrKwd "else"        = Else
-        mkIdOrKwd "elsif"       = Elsif  -- T3
-        mkIdOrKwd "end"         = End
-        mkIdOrKwd "if"          = If
-        mkIdOrKwd "in"          = In
-        mkIdOrKwd "let"         = Let
-        mkIdOrKwd "repeat"      = Repeat -- T1
-        mkIdOrKwd "then"        = Then
-        mkIdOrKwd "until"       = Until -- T1
-        mkIdOrKwd "var"         = Var
-        mkIdOrKwd "while"       = While
-        mkIdOrKwd name          = Id {idName = name}
+        mkIdOrKwd "begin"  = Begin
+        mkIdOrKwd "const"  = Const
+        mkIdOrKwd "do"     = Do
+        mkIdOrKwd "else"   = Else
+        mkIdOrKwd "elsif"  = Elsif
+        mkIdOrKwd "end"    = End
+        mkIdOrKwd "fun"    = Fun
+        mkIdOrKwd "if"     = If
+        mkIdOrKwd "in"     = In
+        mkIdOrKwd "let"    = Let
+        mkIdOrKwd "out"    = Out
+        mkIdOrKwd "proc"   = Proc
+        mkIdOrKwd "repeat" = Repeat
+        mkIdOrKwd "then"   = Then
+        mkIdOrKwd "until"  = Until
+        mkIdOrKwd "var"    = Var
+        mkIdOrKwd "while"  = While
+        mkIdOrKwd name     = Id {idName = name}
 
         -- Return token, position of token, updated position, and remaning
         -- input. We assume tnat no MiniTriangle token span multiple
@@ -165,7 +206,7 @@ scanner cont = P $ scan
 
 -- | Scans the input and returns the resulting tokens paired with position.
 
-scan :: String -> D [(Token, SrcPos)]
+scan :: String -> DF [(Token, SrcPos)]
 scan s = runP (scanner (acceptToken [])) s
 
 
@@ -185,7 +226,8 @@ testScanner s = do
     putStrLn ""
     where
         result :: (Maybe [(Token,SrcPos)], [DMsg])
-        result = runD (runP (scanner (acceptToken [])) s)
+        result = runDF (runP (scanner (acceptToken [])) s)
+
 
 acceptToken :: [(Token,SrcPos)] -> (Token,SrcPos) -> P [(Token,SrcPos)]
 acceptToken tss (ts@(t,_)) =
